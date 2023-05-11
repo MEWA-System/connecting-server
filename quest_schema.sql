@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS phase (
   id long,
-  ts date,
+  ts timestamp,
   phase int,
   voltage float,
   current float,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS combined_phases (
 
 CREATE TABLE IF NOT EXISTS electric_avg (
   id long,
-  ts date,
+  ts timestamp,
   current_demand float,
   power_active_demand float,
   power_apparent_demand float
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS electric_avg (
 
 CREATE TABLE IF NOT EXISTS panel (
   id long,
-  ts date,
+  ts timestamp,
   pressure_status boolean, /* Napięcie */
   diverter_status boolean, /* Odchylacze */
   oil_status boolean, /* olej */
