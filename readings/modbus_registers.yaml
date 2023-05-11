@@ -1,0 +1,28 @@
+#needs to be filled out with registers
+electric_meter:
+  identification:
+    name: electric_meter
+    id: temp
+    id_register: temp
+    ip_address: temp
+  registers:
+    phases:
+      1:
+        voltage: 7500
+        current: 7501
+      2:
+
+      3:
+
+    average:
+      voltage: temp
+
+water_panel:
+  identification:
+    name: water_panel
+    id: temp
+    id_register: temp
+    ip_address: temp
+  registers:
+    panel:
+      oil: temp
