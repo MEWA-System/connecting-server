@@ -1,10 +1,11 @@
 #needs to be filled out with registers
-electric_meter:
-  identification:
+
+electric_meter: !<meter>
+  id: !<id>
     name: electric_meter
-    id: temp
-    id_register: temp
-    ip_address: temp
+    slave_id: 0
+    ip_address: localhost #value for testing
+    tcp_socket: 5020
   registers:
     phases:
       1:
@@ -17,12 +18,12 @@ electric_meter:
     average:
       voltage: temp
 
-water_panel:
-  identification:
+water_panel: !<meter>
+  id: !<id>
     name: water_panel
-    id: temp
-    id_register: temp
-    ip_address: temp
+    slave_id: 0
+    ip_address: localhost
+    tcp_socket: 5020
   registers:
     panel:
       oil: temp

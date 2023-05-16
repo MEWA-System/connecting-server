@@ -1,12 +1,27 @@
+import yaml
+
+
 # classes for yaml to deserialize into
-class Meter:
-    class Identification:
-        name: str
-        id: int
-        id_register: int
+class Meter(yaml.YAMLObject):
+    yaml_loader = yaml.SafeLoader
+    yaml_tag = u"meter"
+
+    class Identification(yaml.YAMLObject):
+        yaml_loader = yaml.SafeLoader
+        yaml_tag = u"id"
+
+        def __init__(self, name, slave_id, ip_address, tcp_socket):
+            self.name = name
+            self.slave_id = slave_id
+            self.ip_address = ip_address
+            self.tcp_socket = tcp_socket
+
+    def __init__(self, id: Identification, registers: dict):
+        self.id = id
+        self.registers = registers
 
 
-# classes for transferring data between
+# classes for holding data, to transfer to the db saving function
 class PhaseReadings:
     phase: int
     voltage: float
