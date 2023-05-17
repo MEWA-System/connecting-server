@@ -9,8 +9,12 @@ electric_meter: !<meter>
   registers:
     phases:
       1:
-        voltage: 7500
-        current: 7501
+        voltage: !<reg>
+          register: 7500
+          type: float
+        current: !<reg>
+          register: 7501
+          type: float
       2:
 
       3:

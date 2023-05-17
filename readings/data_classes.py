@@ -21,6 +21,18 @@ class Meter(yaml.YAMLObject):
         self.registers = registers
 
 
+class Register(yaml.YAMLObject):
+    yaml_loader = yaml.SafeLoader
+    yaml_tag = u"reg"
+
+    def __init__(self, register: int, type):
+        self.register = register
+        self.type = type
+
+    def __int__(self) -> int:
+        return self.register
+
+
 # classes for holding data, to transfer to the db saving function
 class PhaseReadings:
     phase: int
