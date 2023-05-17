@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from psycopg import connect, Cursor
+
 
 app = FastAPI()
 
@@ -14,6 +14,8 @@ async def say_hello(name: str):
     return {"message": f"Hello {name}"}
 
 
-@app.get("/quest")
+@app.get("/quest/exec")
 async def fetch():
     pass
+
+#@app.get("/refresh")
