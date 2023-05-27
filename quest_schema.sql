@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS phase (
 
 CREATE TABLE IF NOT EXISTS combined_phases (
   id long,
+  ts timestamp,
   phase1_id long,
   phase2_id long,
   phase3_id long
