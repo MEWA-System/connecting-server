@@ -1,12 +1,18 @@
 #needs to be filled out with registers
 
-electric_meter: !<meter>
+electric: !<meter>
   id: !<id>
     name: electric_meter
     slave_id: 0
     ip_address: localhost #value for testing
     tcp_socket: 5020
+  register_types:
+    float: !<reg_type>
+      byteorder: ">"
+      wordorder: ">"
+      length: 1 # How many concurrent registers it takes.
   registers:
+    # TODO add more registers
     phases:
       1:
         voltage: !<reg>
@@ -16,9 +22,19 @@ electric_meter: !<meter>
           register: 7501
           type: float
       2:
-
+        voltage: !<reg> # Temp values
+          register: 7500
+          type: float
+        current: !<reg>
+          register: 7501
+          type: float
       3:
-
+        voltage: !<reg> # Temp values
+          register: 7500
+          type: float
+        current: !<reg>
+          register: 7501
+          type: float
     average:
       voltage: temp
 
