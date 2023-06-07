@@ -3,9 +3,9 @@
 electric: !<meter>
   id: !<id>
     name: electric_meter
-    slave_id: 0
-    ip_address: localhost #value for testing
-    tcp_socket: 5020
+    slave_id: 1
+    ip_address: 192.168.8.100
+    tcp_socket: 502
   register_types:
     float: !<reg_type>
       byteorder: ">"
@@ -41,9 +41,16 @@ electric: !<meter>
 water_panel: !<meter>
   id: !<id>
     name: water_panel
-    slave_id: 0
+    slave_id: 2
     ip_address: localhost
     tcp_socket: 5020
+  register_types:
+    int8: !<reg_type>
+      byteorder: ">"
+      wordorder: ">"
+      length: 1
   registers:
     panel:
-      oil: temp
+      oil: !<reg>
+        register: 2
+        type: int8
