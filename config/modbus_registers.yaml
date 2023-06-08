@@ -21,29 +21,75 @@ electric: !<meter>
         current: !<reg>
           register: 7501
           type: float
+        power_active: !<reg>
+          register: 7502
+          type: float
+        power_reactive: !<reg>
+          register: 7503
+          type: float
+        power_apparent: !<reg>
+          register: 7504
+          type: float
       2:
-        voltage: !<reg> # Temp values
-          register: 7500
+        voltage: !<reg>
+          register: 7509
           type: float
         current: !<reg>
-          register: 7501
+          register: 7510
+          type: float
+        power_active: !<reg>
+          register: 7511
+          type: float
+        power_reactive: !<reg>
+          register: 7512
+          type: float
+        power_apparent: !<reg>
+          register: 7513
           type: float
       3:
-        voltage: !<reg> # Temp values
-          register: 7500
+        voltage: !<reg>
+          register: 7518
           type: float
         current: !<reg>
-          register: 7501
+          register: 7519
+          type: float
+        power_active: !<reg>
+          register: 7520
+          type: float
+        power_reactive: !<reg>
+          register: 7521
+          type: float
+        power_apparent: !<reg>
+          register: 7522
           type: float
     average:
-      voltage: temp
+      current_demand: !<reg>
+        register: 7543
+        type: float
+      power_active_demand: !<reg>
+        register: 7541
+        type: float
+      power_apparent_demand: !<reg>
+        register: 7542
+        type: float
 
 water_panel: !<meter>
   id: !<id>
     name: water_panel
-    slave_id: 0
+    slave_id: 2
     ip_address: localhost
     tcp_socket: 5020
+  register_types:
+    int8: !<reg_type>
+      byteorder: ">"
+      wordorder: ">"
+      length: 1
+    bool8: !<reg_type>
+      byteorder: ">"
+      wordorder: ">"
+      length: 1
   registers:
     panel:
-      oil: temp
+      oil_status: !<reg>
+        register: 2
+        type: bool8
