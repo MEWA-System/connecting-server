@@ -25,4 +25,4 @@ def load_config(section: str, filename=os.getcwd() + "/config/config.ini"):
 
 
 def get_register_reference_path():
-    return os.getcwd() + "/readings/modbus_registers.yaml"
+    return os.getcwd() + "/config/modbus_registers.yaml"
