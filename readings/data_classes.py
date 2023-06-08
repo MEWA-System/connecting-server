@@ -3,6 +3,15 @@ import yaml
 
 # classes for yaml to deserialize into
 class Meter(yaml.YAMLObject):
+    """
+    Class for storing data necessary for reading data from a meter\n
+    Define in yaml with tag !<meter>
+    Contains:
+        Identification necessary for connection
+        A pymodbus connection
+        Sets of registers
+        Information about register types
+    """
     yaml_loader = yaml.SafeLoader
     yaml_tag = u"meter"
     client = None
