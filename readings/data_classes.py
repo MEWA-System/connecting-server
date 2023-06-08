@@ -44,17 +44,37 @@ class Register(yaml.YAMLObject):
         return self.register
 
 
-# classes for holding data, to transfer to the db saving function
-class PhaseReadings:
-    phase: int
-    voltage: float
-    current: float
-    power_active: float
-    power_reactive: float
+# Expected types for returned data from modbus.py functions
+class DataTemplates:
+    PHASE = {
+        "voltage": float,
+        "current": float,
+        "power_active": float,
+        "power_reactive": float,
+        "power_apparent": float,
+    }
+
+    AVG = {
+        "current_demand": float,  # A/15min
+        "power_active_demand": float,  # kW/15min
+        "power_apparent_demand": float,  # kVA/15min
+    }
+
+    PANEL = {
+        "pressure_status": bool,
+        "diverter_status": bool,
+        "oil_status": bool,
+        "water_status": bool,
+        "water_level": int,
+        "diverter_position": int,
+    }
+# End DataTemplates
 
 
-class ElectricReadings:
-    phase1: PhaseReadings
-    phase2: PhaseReadings
-    phase3: PhaseReadings
-    power_active_avg: float
+def is_correct_to_template(data: dict, template: dict) -> bool:
+    for key, value in template.items():
+        if key not in data:
+            return False
+        if not isinstance(data[key], value):
+            return False
+    return True

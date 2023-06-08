@@ -1,9 +1,8 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
 CREATE TABLE IF NOT EXISTS phase (
-  id long,
   ts timestamp,
-  phase int,
+  phase symbol,
   voltage float,
   current float,
   power_active float,
@@ -11,16 +10,7 @@ CREATE TABLE IF NOT EXISTS phase (
   power_apparent float
 );
 
-CREATE TABLE IF NOT EXISTS combined_phases (
-  id long,
-  ts timestamp,
-  phase1_id long,
-  phase2_id long,
-  phase3_id long
-);
-
 CREATE TABLE IF NOT EXISTS electric_avg (
-  id long,
   ts timestamp,
   current_demand float,
   power_active_demand float,
@@ -28,7 +18,6 @@ CREATE TABLE IF NOT EXISTS electric_avg (
 );
 
 CREATE TABLE IF NOT EXISTS panel (
-  id long,
   ts timestamp,
   pressure_status boolean, /* Napięcie */
   diverter_status boolean, /* Odchylacze */
