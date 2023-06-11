@@ -4,7 +4,7 @@ from datetime import timedelta
 from typing import Optional
 
 from config.config_loading import load_config, ConfigNotFound
-from reading_execution import measure_and_save_avg, measure_and_save_panel, measure_and_save_phases
+from readings.reading_execution import measure_and_save_avg, measure_and_save_panel, measure_and_save_phases
 
 
 # Base source: https://medium.com/greedygame-engineering/an-elegant-way-to-run-periodic-tasks-in-python-61b7c477b679

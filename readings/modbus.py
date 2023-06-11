@@ -4,7 +4,7 @@ import yaml
 from pymodbus import client as mbc, payload as mbp
 
 from config.config_loading import get_register_reference_path
-from data_classes import Meter, Register
+from readings.data_classes import Meter, Register
 
 # Global variables
 meters: Optional[dict[str, Meter]] = None
