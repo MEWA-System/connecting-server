@@ -1,1 +1,2 @@
-python -m readings.scheduler
+#!/bin/bash
+./venv/bin/python -m readings.scheduler
