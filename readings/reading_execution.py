@@ -1,8 +1,8 @@
 import asyncio
 
-from db_functions import ingest, ingest_phases
-from modbus import read_phases, read_avg, read_panel
-from data_classes import DataTemplates, is_correct_to_template
+from readings.db_functions import ingest, ingest_phases
+from readings.modbus import read_phases, read_avg, read_panel
+from readings.data_classes import DataTemplates, is_correct_to_template
 
 
 def measure_and_save_phases():
