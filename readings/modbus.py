@@ -4,7 +4,7 @@ import yaml
 from pymodbus import client as mbc, payload as mbp
 
 from config.config_loading import get_register_reference_path
-from data_classes import Meter, Register
+from readings.data_classes import Meter, Register
 
 # Global variables
 # Dictionary containing all loaded meters
@@ -78,6 +78,10 @@ def _decode_type(register: Register, decoder: mbp.BinaryPayloadDecoder) -> any:
             return decoder.decode_32bit_float()
         case "int":
             return decoder.decode_16bit_int()
+        case "uint8":
+            return decoder.decode_8bit_uint()
+        case "bool8":
+            return bool(decoder.decode_8bit_uint())
         case _:
             raise ValueError(f"Register type unsupported by the decoder: {register.type}")
 
