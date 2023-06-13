@@ -21,10 +21,11 @@ class Meter(yaml.YAMLObject):
         yaml_loader = yaml.SafeLoader
         yaml_tag = u"reg_type"
 
-        def __init__(self, byteorder, wordorder, length):
+        def __init__(self, byteorder, wordorder, length, read_type="input"):
             self.byteorder = byteorder
             self.wordorder = wordorder
             self.length = length
+            self.read_type = read_type
 
     def __init__(self, id: Identification, registers: dict, register_types: dict[str, RegisterType]):
         self.id = id
