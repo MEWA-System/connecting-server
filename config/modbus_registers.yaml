@@ -11,6 +11,7 @@ electric: !<meter>
       byteorder: ">"
       wordorder: ">"
       length: 1 # How many concurrent registers it takes.
+      read_type: input
   registers:
     # TODO add more registers
     phases:
@@ -76,16 +77,17 @@ electric: !<meter>
 water_panel: !<meter>
   id: !<id>
     name: water_panel
-    slave_id: 2
-    ip_address: localhost
-    tcp_socket: 5020
+    slave_id: 1
+    ip_address: 192.168.8.105
+    tcp_socket: 502
   register_types:
-    bool8: !<reg_type>
+    bool16: !<reg_type>
       byteorder: ">"
       wordorder: ">"
       length: 1
+      read_type: holding
   registers:
     panel:
       oil_status: !<reg>
         register: 2
-        type: bool8
+        type: bool16
