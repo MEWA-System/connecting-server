@@ -73,7 +73,14 @@ async def _read_register(meter: Meter, register: Register) -> any:
     if reg_type is None:
         raise ValueError(f"Register type '{register.type}' not found in configuration")
 
-    response = await meter.client.read_input_registers(register.register, reg_type.length, meter.id.slave_id)
+    match reg_type.read_type:
+        case "input":
+            response = await meter.client.read_input_registers(register.register, reg_type.length, meter.id.slave_id)
+        case "holding":
+            response = await meter.client.read_holding_registers(register.register, reg_type.length, meter.id.slave_id)
+        case _:
+            raise NotImplementedError(f"Register read type '{reg_type.read_type}' not supported")
+
     if response.isError():
         raise ConnectionError(f"Error reading register {register.register}: {response}")
 
