@@ -4,7 +4,7 @@ electric: !<meter>
   id: !<id>
     name: electric_meter
     slave_id: 1
-    ip_address: 192.168.8.100
+    ip_address: 192.168.8.103
     tcp_socket: 502
   register_types:
     float: !<reg_type>
