@@ -68,6 +68,7 @@ def _decode_type(register: Register, decoder: mbp.BinaryPayloadDecoder) -> any:
 
 
 async def _read_register(meter: Meter, register: Register) -> any:
+    await _connect_meter(meter)
     assert meter.client is not None and meter.client.connected
     reg_type = meter.register_types[register.type]
     if reg_type is None:
@@ -81,8 +82,6 @@ async def _read_register(meter: Meter, register: Register) -> any:
         case _:
             raise NotImplementedError(f"Register read type '{reg_type.read_type}' not supported")
 
-    await meter.client.close()
-
     if response.isError():
         raise ConnectionError(f"Error reading register {register.register}: {response}")
 
@@ -93,10 +92,15 @@ async def _read_register(meter: Meter, register: Register) -> any:
 
 async def _read_registers(meter: Meter, registers: dict[str, Register]) -> dict:
     assert isinstance(registers, dict)
+    meter.lock.acquire(blocking=True)
+    # In lock
     await _connect_meter(meter)
     results = {}
     for key, register in registers.items():
         results[key] = await _read_register(meter, register)
+    await meter.client.close()
+    # Out of lock
+    meter.lock.release()
     return results
 
 

@@ -1,4 +1,5 @@
 import yaml
+import threading
 
 
 # classes for yaml to deserialize into
@@ -6,6 +7,7 @@ class Meter(yaml.YAMLObject):
     yaml_loader = yaml.SafeLoader
     yaml_tag = u"meter"
     client = None
+    lock = threading.Lock()
 
     class Identification(yaml.YAMLObject):
         yaml_loader = yaml.SafeLoader
