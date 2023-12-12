@@ -1,3 +1,14 @@
+"""Module for reading data from the meters using the Modbus protocol.
+
+Requires a register reference yaml file.
+See Also
+--------
+``config.config_loading.get_register_reference_path``
+    See for information on the location of the file
+``readings.data_classes.Meter``
+    See for information on the structure of the file
+
+"""
 from typing import Optional
 
 import yaml
@@ -7,11 +18,20 @@ from config.config_loading import get_register_reference_path
 from readings.data_classes import Meter, Register
 
 # Global variables
+# Dictionary containing all loaded meters
 meters: Optional[dict[str, Meter]] = None
+# Path to the register and meter config file
 config: str = get_register_reference_path()
 
 
 def _get_meters() -> dict[str, Meter]:
+    """Lazily loads the register reference file and returns the meters dictionary
+
+    Returns
+    -------
+    dict[str, Meter]
+        Dictionary containing all meters found in the register reference file
+    """
     global meters
     if meters is None:
         _load_register_reference()
@@ -28,6 +48,13 @@ def _get_panel() -> Meter:
 
 
 async def _connect_meter(meter: Meter):
+    """Lazily connects to the meter, creates a client if needed
+
+    Parameters
+    ----------
+    meter : Meter
+        Reference to the meter object
+    """
     if meter.client is None:
         meter.client = mbc.AsyncModbusTcpClient(meter.id.ip_address, meter.id.tcp_socket)
     if not meter.client.connected:
@@ -54,6 +81,33 @@ async def _modbus_test(phase: int):
 
 
 def _decode_type(register: Register, decoder: mbp.BinaryPayloadDecoder) -> any:
+    """Decodes the register value based on the register type
+
+    Supported types:
+        - ``"float"`` (4 bytes) ``-> float``
+        - ``"int"`` (2 bytes) ``-> int``
+        - ``"uint8"`` (1 byte) ``-> int``
+        - ``"bool16"`` (2 bytes) ``-> bool``
+
+    Parameters
+    ----------
+    register : Register
+        current register with supported type-string in register.type
+    decoder :  mbp.BinaryPayloadDecoder
+        pymodbus decoder created from the response and containing the necessary number of bytes for the type
+
+    Raises
+    ------
+    ValueError
+        If the register type is not supported by the decoder or implemented in this function
+
+    Returns
+    -------
+    any
+        Decoded value, type depends on the register type
+
+
+    """
     match register.type:
         case "float":
             return decoder.decode_32bit_float()
@@ -68,6 +122,23 @@ def _decode_type(register: Register, decoder: mbp.BinaryPayloadDecoder) -> any:
 
 
 async def _read_register(meter: Meter, register: Register) -> any:
+    """Reads a given register from the meter.
+
+    Requires the meter to be connected and the register to be defined in the meter configuration.
+
+    Parameters
+    ----------
+    meter : Meter
+        Reference to the meter object
+        Needs to be already connected
+    register : Register
+        Reference to the intended register object
+
+    Returns
+    -------
+    any
+        Value from the register decoded according to its type
+    """
     await _connect_meter(meter)
     assert meter.client is not None and meter.client.connected
     reg_type = meter.register_types[register.type]
@@ -91,6 +162,22 @@ async def _read_register(meter: Meter, register: Register) -> any:
 
 
 async def _read_registers(meter: Meter, registers: dict[str, Register]) -> dict:
+    """Reads a set of registers from the meter
+
+    Lazy-connects to the meter if needed
+
+    Parameters
+    ----------
+    meter : Meter
+        Reference to the meter object
+    registers : dict[str, Register]
+        Dictionary of registers to read, with the register name as key and the register object as value
+
+    Returns
+    -------
+    dict
+        Contains the decoded values, with the same keys as the input dictionary
+    """
     assert isinstance(registers, dict)
     meter.lock.acquire(blocking=True)
     # In lock
@@ -106,6 +193,16 @@ async def _read_registers(meter: Meter, registers: dict[str, Register]) -> dict:
 
 # Public functions for reading data from specific register sets
 async def read_phases() -> list[dict]:
+    """Reads measurements of all phases from the electric meter.
+
+    Reads the register set ``"phases"`` from the meter ``"electric"``
+    defined in the register reference file, so those need to be defined.
+
+    Returns
+    -------
+    list[dict]
+        List of dictionaries of phase readings
+    """
     electric = _get_electric()
     phases = []
     for phase_id, phase in electric.registers["phases"].items():
@@ -114,11 +211,31 @@ async def read_phases() -> list[dict]:
 
 
 async def read_avg() -> dict:
+    """Reads the average measurements from the electric meter.
+
+    Reads the register set ``"average"`` from the meter ``"electric"``,
+    which needs to be defined in the register reference file.
+
+    Returns
+    -------
+    dict
+        Dictionary of average readings
+    """
     electric = _get_electric()
     return await _read_registers(electric, electric.registers["average"])
 
 
 async def read_panel() -> dict:
+    """Reads the measurements from the water panel.
+
+    Reads the register set ``"panel"`` from the meter ``"water_panel"``,
+    which needs to be defined in the register reference file.
+
+    Returns
+    -------
+    dict
+        Dictionary of water panel readings
+    """
     panel = _get_panel()
     return await _read_registers(panel, panel.registers["panel"])
 
