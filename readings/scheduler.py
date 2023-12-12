@@ -13,8 +13,8 @@ import time
 from datetime import timedelta
 from typing import Optional
 
-from config.config_loading import load_config, ConfigNotFound
-from readings.reading_execution import measure_and_save_avg, measure_and_save_panel, measure_and_save_phases
+from config.config_loading import load_config, ConfigNotFound, load_yaml_config
+from readings.reading_execution import measure_and_save
 
 
 # Base source: https://medium.com/greedygame-engineering/an-elegant-way-to-run-periodic-tasks-in-python-61b7c477b679
@@ -57,11 +57,7 @@ class Job(threading.Thread):
             self.execute(*self.args, **self.kwargs)
 
 
-jobs: dict[str, Optional[Job]] = {
-    "phases": None,
-    "avg": None,
-    "panel": None,
-}
+jobs: dict[str, Optional[Job]] = {}
 
 
 def init_jobs():
@@ -74,21 +70,30 @@ def init_jobs():
 
     Defaults to 15 minutes if an interval is not specified.
 
-    The jobs are:
-        - ``"phases"``: ``measure_and_save_phases``
-        - ``"avg"``: ``measure_and_save_avg``
-        - ``"panel"``: ``measure_and_save_panel``
+    The jobs are readings of tables loaded from the register reference file.
 
     """
+    # TODO: Move intervals to yaml config
     try:
         intervals = load_config(section="reading_intervals")
+        for name, interval in intervals.items():
+            intervals[name] = int(interval)
     except ConfigNotFound:
         print("Interval config not found, using default values of 15 minutes")
         intervals = {}
 
-    jobs["phases"] = Job(timedelta(seconds=int(intervals.get("phases", 15 * 60))), measure_and_save_phases)
-    jobs["avg"] = Job(timedelta(seconds=int(intervals.get("avg", 15 * 60))), measure_and_save_avg)
-    jobs["panel"] = Job(timedelta(seconds=int(intervals.get("panel", 15 * 60))), measure_and_save_panel)
+    global jobs
+
+    meters, tables = load_yaml_config()
+    for name, table in tables.items():
+        jobs[name] = Job(
+            interval=timedelta(seconds=intervals.get(name, 15 * 60)),
+            execute=measure_and_save,
+            # kwargs passed to measure_and_save
+            table=table,
+            table_name=name,
+            meters=meters,
+        )
 
 
 def start_jobs():
@@ -97,14 +102,16 @@ def start_jobs():
     If the jobs have not been initialized, ``init_jobs()`` is run.
 
     """
-    if any(job is None for job in jobs.values()):
+    if not jobs or any(job is None for job in jobs.values()):
         init_jobs()
     for job in jobs.values():
         job.start()
 
 
-# For only running the scheduler
-if __name__ == "__main__":
+def _main():
+    """Main function for running the scheduler as a standalone script.
+
+    """
     start_jobs()
     while True:
         try:
@@ -113,3 +120,8 @@ if __name__ == "__main__":
             for job in jobs.values():
                 job.stop()
             break
+
+
+# For only running the scheduler
+if __name__ == "__main__":
+    _main()

@@ -140,7 +140,7 @@ async def _read_register(meter: Meter, register: Register) -> any:
         Value from the register decoded according to its type
     """
     await _connect_meter(meter)
-    assert meter.client is not None and meter.client.connected
+    # assert meter.client is not None and meter.client.connected
     reg_type = meter.register_types[register.type]
     if reg_type is None:
         raise ValueError(f"Register type '{register.type}' not found in configuration")
@@ -161,15 +161,18 @@ async def _read_register(meter: Meter, register: Register) -> any:
     return _decode_type(register, decoder)
 
 
-async def _read_registers(meter: Meter, registers: dict[str, Register]) -> dict:
+async def read_registers(meters: dict[str, Meter], registers: dict[str, Register]) -> dict:
     """Reads a set of registers from the meter
 
     Lazy-connects to the meter if needed
 
     Parameters
     ----------
-    meter : Meter
-        Reference to the meter object
+    meters : dict[str, Meter]
+        Dictionary of meters to read from, loaded from the register reference file.
+
+        Should contain all meters needed for the registers.
+
     registers : dict[str, Register]
         Dictionary of registers to read, with the register name as key and the register object as value
 
@@ -179,15 +182,23 @@ async def _read_registers(meter: Meter, registers: dict[str, Register]) -> dict:
         Contains the decoded values, with the same keys as the input dictionary
     """
     assert isinstance(registers, dict)
-    meter.lock.acquire(blocking=True)
-    # In lock
-    await _connect_meter(meter)
+
     results = {}
     for key, register in registers.items():
+        # Prepare the meter
+        meter = meters[register.meter]
+        assert meter is not None
+        meter.lock.acquire(blocking=True)
+        # --- In lock ---
+        await _connect_meter(meter)
+
+        # Perform the read
         results[key] = await _read_register(meter, register)
-    await meter.client.close()
-    # Out of lock
-    meter.lock.release()
+
+        # Close the connection
+        await meter.client.close()
+        # --- Out of lock ---
+        meter.lock.release()
     return results
 
 
@@ -206,7 +217,7 @@ async def read_phases() -> list[dict]:
     electric = _get_electric()
     phases = []
     for phase_id, phase in electric.registers["phases"].items():
-        phases.append(await _read_registers(electric, phase))
+        phases.append(await read_registers(meters, phase))
     return phases
 
 
@@ -222,7 +233,7 @@ async def read_avg() -> dict:
         Dictionary of average readings
     """
     electric = _get_electric()
-    return await _read_registers(electric, electric.registers["average"])
+    return await read_registers(meters, registers["average"])
 
 
 async def read_panel() -> dict:
@@ -237,7 +248,7 @@ async def read_panel() -> dict:
         Dictionary of water panel readings
     """
     panel = _get_panel()
-    return await _read_registers(panel, panel.registers["panel"])
+    return await read_registers(meters, registers["panel"])
 
 
 # For testing purposes

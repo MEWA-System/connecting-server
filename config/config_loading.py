@@ -9,6 +9,10 @@ load_config
 import os
 from configparser import ConfigParser
 
+import yaml
+
+from readings.data_classes import Meter, Table
+
 
 class ConfigNotFound(Exception):
     pass
@@ -58,13 +62,34 @@ def load_config(section: str, filename=os.getcwd() + "/config/config.ini"):
 def get_register_reference_path():
     """Returns the path to the register reference file
 
-    Assumes the working directory is the root of the project.
+    Change it with the environment variable ``MEWA_YAML_CONFIG_PATH``
 
-    Currently locked to /config/modbus_registers.yaml
+    Otherwise, it is set to ``config/modbus_registers.yaml``
 
     Returns
     -------
     str
         Path to the register reference file
     """
-    return os.getcwd() + "/config/modbus_registers.yaml"
+    if "MEWA_YAML_CONFIG_PATH" in os.environ:
+        return os.environ["MEWA_YAML_CONFIG_PATH"]
+    else:
+        return os.getcwd() + "/config/modbus_registers.yaml"
+
+
+def load_yaml_config() -> (dict[str, Meter], dict[str, Table]):
+    """Loads the register reference file
+
+    Returns
+    -------
+    dict[str, Meter]
+        Dictionary containing all meters found in the register reference file
+    dict[str, Table]
+        Dictionary containing all tables found in the register reference file
+    """
+    path = get_register_reference_path()
+    with open(path, "r") as stream:
+        registers = yaml.safe_load(stream)
+    meters = registers["meters"]
+    tables = registers["tables"]
+    return meters, tables
