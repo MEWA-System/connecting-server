@@ -11,22 +11,13 @@ class Meter(yaml.YAMLObject):
 
     Define in yaml at the root level with: ::
 
-        meter_name: !<meter>
-            id: !<id>
-                # refer to Identification class
-            register_types:
-                register_type_name: !<reg_type>
-                    # refer to RegisterType class
-            registers:
-                set_name:
-                    register_name: !<reg>
-                        # refer to Register class
-                combined_set_name:
-                    1:
-                        register_name: !<reg>
-                            # refer to Register class
-                    2:
-                    # etc
+        meters:
+            meter_name: !<meter>
+                id: !<id>
+                    # refer to Identification class
+                register_types:
+                    register_type_name: !<reg_type>
+                        # refer to RegisterType class
 
     Attributes
     ----------
@@ -34,10 +25,10 @@ class Meter(yaml.YAMLObject):
         Information necessary for connection to the meter
     register_types : dict[str, RegisterType]
         Dictionary containing information about register types
-    registers : dict[str, dict[str, Register]] | dict[str, dict[any, dict[str, Register]]]
-        Sets of registers
     client : pymodbus.client.ModbusBaseClient
         Lazy-loaded Modbus client for the meter
+    lock : threading.Lock
+        Lock for the client, to prevent concurrent connections
     """
     yaml_loader = yaml.SafeLoader
     yaml_tag = u"meter"
@@ -101,10 +92,73 @@ class Meter(yaml.YAMLObject):
             self.length = length
             self.read_type = read_type
 
-    def __init__(self, id: Identification, registers: dict, register_types: dict[str, RegisterType]):
+    def __init__(self, id: Identification, register_types: dict[str, RegisterType]):
         self.id = id
-        self.registers = registers
         self.register_types = register_types
+
+
+class Table(yaml.YAMLObject):
+    """Dictionary containing registers for a QuestDB table.
+
+    Define in yaml at the root level with: ::
+
+        tables:
+            table_name: !<table>
+                type: simple
+                fields:
+                    register_name: !<reg>
+                        # refer to Register class
+                    register_name2: !<reg>
+                        # refer to Register class
+                    # etc
+
+    or, for a symbolic table: ::
+
+        tables:
+            table_name: !<table>
+                type: symbolic
+                symbol_field: name_of_symbol
+                fields:
+                    symbol_value:
+                        register_name: !<reg>
+                            # refer to Register class
+                    symbol_value2:
+                    # etc
+
+
+    In a simple table, all fields are ingested to the same row
+
+    In a symbolic table, some fields are separated to several rows, per each symbol value.
+    The fields under each symbol are intended to have duplicate names between the symbols,
+    but different registers or meters
+
+
+    Attributes
+    ----------
+    type : str
+        Type of the table, either ``simple`` or ``symbolic``
+    fields : dict[str, Register] | dict[str, dict[any, Register]]
+        Dictionary of registers that will be read and ingested into the table
+        In a symbolic table, the registers must be nested in another dictionary,
+        representing the symbol they will be grouped by
+    symbol_field : str
+        Name of the field used for storing the symbol in a symbolic table
+    """
+    class Types:
+        SIMPLE = "simple"
+        SYMBOLIC = "symbolic"
+
+    yaml_loader = yaml.SafeLoader
+    yaml_tag = u"table"
+
+    type = None
+    fields = None
+    symbol_field = None
+
+    def __init__(self, fields: dict, type: str = Types.SIMPLE, symbol_field: str = None):
+        self.type = type
+        self.fields = fields
+        self.symbol_field = symbol_field
 
 
 class Register(yaml.YAMLObject):
@@ -112,11 +166,12 @@ class Register(yaml.YAMLObject):
 
     **Register name has to match the name of the associated database column.**
 
-    Define in yaml within a register set with: ::
+    Define in yaml within a table's fields section with: ::
 
         register_name: !<reg>
             register: address_value
-            type: type_name
+            type: type_name        # must be defined in the meter's register_types
+            meter: meter_name      # must be defined in meters: section
 
     Attributes
     ----------
@@ -125,14 +180,17 @@ class Register(yaml.YAMLObject):
     type : str
         Name of the register type, must be defined in the meter's register_types
         and have an associated decoder in ``_decode_type()`` within ``modbus.py``
+    meter : str
+        Name of the meter the register should be read from
 
     """
     yaml_loader = yaml.SafeLoader
     yaml_tag = u"reg"
 
-    def __init__(self, register: int, type: str):
+    def __init__(self, register: int, type: str, meter: str):
         self.register = register
         self.type = type
+        self.meter = meter
 
     def __int__(self) -> int:
         return self.register

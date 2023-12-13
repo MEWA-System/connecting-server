@@ -1,93 +1,123 @@
 #needs to be filled out with registers
+meters:
+  electric: !<meter>
+    id: !<id>
+      name: electric_meter
+      slave_id: 1
+      ip_address: 192.168.8.103
+      tcp_socket: 502
+    register_types:
+      float: !<reg_type>
+        byteorder: ">"
+        wordorder: ">"
+        length: 1 # How many concurrent registers it takes.
+        read_type: input
 
-electric: !<meter>
-  id: !<id>
-    name: electric_meter
-    slave_id: 1
-    ip_address: 192.168.8.103
-    tcp_socket: 502
-  register_types:
-    float: !<reg_type>
-      byteorder: ">"
-      wordorder: ">"
-      length: 1 # How many concurrent registers it takes.
-      read_type: input
-  registers:
-    # TODO add more registers
-    phases:
+
+  water_panel: !<meter>
+    id: !<id>
+      name: water_panel
+      slave_id: 1
+      ip_address: 192.168.8.103
+      tcp_socket: 502
+    register_types:
+      bool16: !<reg_type>
+        byteorder: ">"
+        wordorder: ">"
+        length: 1
+        read_type: holding
+
+
+tables:
+  phases: !<table>
+    type: symbolic
+    symbol_field: phase
+    fields:
       1:
         voltage: !<reg>
           register: 7500
           type: float
+          meter: electric
         current: !<reg>
           register: 7501
           type: float
+          meter: electric
         power_active: !<reg>
           register: 7502
           type: float
+          meter: electric
         power_reactive: !<reg>
           register: 7503
           type: float
+          meter: electric
         power_apparent: !<reg>
           register: 7504
           type: float
+          meter: electric
       2:
         voltage: !<reg>
           register: 7509
           type: float
+          meter: electric
         current: !<reg>
           register: 7510
           type: float
+          meter: electric
         power_active: !<reg>
           register: 7511
           type: float
+          meter: electric
         power_reactive: !<reg>
           register: 7512
           type: float
+          meter: electric
         power_apparent: !<reg>
           register: 7513
           type: float
+          meter: electric
       3:
         voltage: !<reg>
           register: 7518
           type: float
+          meter: electric
         current: !<reg>
           register: 7519
           type: float
+          meter: electric
         power_active: !<reg>
           register: 7520
           type: float
+          meter: electric
         power_reactive: !<reg>
           register: 7521
           type: float
+          meter: electric
         power_apparent: !<reg>
           register: 7522
           type: float
-    average:
+          meter: electric
+
+  average: !<table>
+    type: simple
+    fields:
       current_demand: !<reg>
         register: 7543
         type: float
+        meter: electric
       power_active_demand: !<reg>
         register: 7541
         type: float
+        meter: electric
       power_apparent_demand: !<reg>
         register: 7542
         type: float
+        meter: electric
 
-water_panel: !<meter>
-  id: !<id>
-    name: water_panel
-    slave_id: 1
-    ip_address: 192.168.8.105
-    tcp_socket: 502
-  register_types:
-    bool16: !<reg_type>
-      byteorder: ">"
-      wordorder: ">"
-      length: 1
-      read_type: holding
-  registers:
-    panel:
+  panel: !<table>
+    type: simple
+    fields:
       oil_status: !<reg>
         register: 2
         type: bool16
+        meter: water_panel
+
