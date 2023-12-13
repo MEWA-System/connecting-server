@@ -57,6 +57,6 @@ def measure_and_save(table: Table, table_name: str, meters: dict[str, Meter]):
 
             for symbol, fields in table.fields.items():
                 data = asyncio.run(read_registers(meters, fields))
-                ingest(table_name, data, symbols={table.symbol_name: symbol})
+                ingest(table_name, data, symbols={table.symbol_field: symbol})
         case _:
             raise ValueError(f"Table type {table.type} not recognized")

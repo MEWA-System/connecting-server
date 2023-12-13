@@ -141,7 +141,7 @@ class Table(yaml.YAMLObject):
         Dictionary of registers that will be read and ingested into the table
         In a symbolic table, the registers must be nested in another dictionary,
         representing the symbol they will be grouped by
-    symbol_name : str
+    symbol_field : str
         Name of the field used for storing the symbol in a symbolic table
     """
     class Types:
@@ -151,10 +151,14 @@ class Table(yaml.YAMLObject):
     yaml_loader = yaml.SafeLoader
     yaml_tag = u"table"
 
-    def __init__(self, fields: dict, type: str = Types.SIMPLE, symbol_name: str = None):
+    type = None
+    fields = None
+    symbol_field = None
+
+    def __init__(self, fields: dict, type: str = Types.SIMPLE, symbol_field: str = None):
         self.type = type
         self.fields = fields
-        self.symbol_name = symbol_name
+        self.symbol_field = symbol_field
 
 
 class Register(yaml.YAMLObject):
